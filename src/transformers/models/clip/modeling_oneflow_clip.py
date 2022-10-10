@@ -18,8 +18,8 @@
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple, Union
 
-import oneflow
-import torch.utils.checkpoint
+import oneflow as torch
+import oneflow.utils.checkpoint
 from oneflow import nn
 
 from ...activations import ACT2FN
@@ -566,7 +566,7 @@ class CLIPEncoder(nn.Module):
 
                     return custom_forward
 
-                layer_outputs = torch.utils.checkpoint.checkpoint(
+                layer_outputs = oneflow.utils.checkpoint.checkpoint(
                     create_custom_forward(encoder_layer), hidden_states, attention_mask, causal_attention_mask,
                 )
             else:
