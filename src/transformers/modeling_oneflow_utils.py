@@ -98,7 +98,7 @@ logger = logging.get_logger(__name__)
 
 
 _init_weights = True
-
+__ONEFLOW_DEFAULT_DTYPE__ = None
 
 if is_sagemaker_mp_enabled():
     import smdistributed.modelparallel.torch as smp
@@ -396,7 +396,20 @@ def load_state_dict(checkpoint_file: Union[str, os.PathLike]):
             )
         return safe_load_file(checkpoint_file)
     try:
-        return torch.load(checkpoint_file, map_location="cpu")
+        # this is oneflow saved model, a dir
+        if os.path.isdir(checkpoint_file):
+            return torch.load(checkpoint_file, map_location="cpu")
+        else:
+            import torch as og_torch
+
+            torch_parameters = og_torch.load(checkpoint_file, map_location="cpu")
+            oneflow_parameters = dict()
+            for key, value in torch_parameters.items():
+                if value.is_cuda:
+                    raise ValueError(f"torch model is not on cpu, it is on {value.device}")
+                val = value.detach().cpu().numpy()
+                oneflow_parameters[key] = val
+            return oneflow_parameters
     except Exception as e:
         try:
             with open(checkpoint_file) as f:
@@ -1047,8 +1060,17 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
             )
 
         logger.info(f"Instantiating {cls.__name__} model under default dtype {dtype}.")
-        dtype_orig = torch.get_default_dtype()
-        torch.set_default_dtype(dtype)
+        global __ONEFLOW_DEFAULT_DTYPE__
+        if __ONEFLOW_DEFAULT_DTYPE__ is None:
+            import torch as og_torch
+
+            dtype_orig = og_torch.get_default_dtype()
+            if dtype_orig == og_torch.float32:
+                dtype_orig = torch.float32
+        else:
+            dtype_orig = __ONEFLOW_DEFAULT_DTYPE__
+        __ONEFLOW_DEFAULT_DTYPE__ = dtype
+        # torch.set_default_dtype(dtype)
         return dtype_orig
 
     @property
