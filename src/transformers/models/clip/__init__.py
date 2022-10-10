@@ -70,6 +70,8 @@ else:
         "CLIPVisionModel",
     ]
 
+_import_structure["modeling_oneflow_clip"] = ["OneFlowCLIPTextModel"]
+
 try:
     if not is_tf_available():
         raise OptionalDependencyNotAvailable()
