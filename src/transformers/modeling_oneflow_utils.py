@@ -27,6 +27,25 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import oneflow as torch
+
+__ONEFLOW_DEFAULT_DTYPE__ = torch.float32
+
+
+def _get_default_dtype():
+    global __ONEFLOW_DEFAULT_DTYPE__
+    print("default dtype is ", __ONEFLOW_DEFAULT_DTYPE__)
+    return __ONEFLOW_DEFAULT_DTYPE__
+
+
+def _set_default_dtype(dtype):
+    global __ONEFLOW_DEFAULT_DTYPE__
+    print("set default dtype to ", dtype)
+    __ONEFLOW_DEFAULT_DTYPE__ = dtype
+
+
+setattr(torch, "get_default_dtype", _get_default_dtype)
+setattr(torch, "set_default_dtype", _set_default_dtype)
+
 from packaging import version
 from oneflow import Tensor, device, nn
 from oneflow.nn import CrossEntropyLoss
@@ -98,7 +117,7 @@ logger = logging.get_logger(__name__)
 
 
 _init_weights = True
-__ONEFLOW_DEFAULT_DTYPE__ = None
+
 
 if is_sagemaker_mp_enabled():
     import smdistributed.modelparallel.torch as smp
@@ -1060,17 +1079,8 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
             )
 
         logger.info(f"Instantiating {cls.__name__} model under default dtype {dtype}.")
-        global __ONEFLOW_DEFAULT_DTYPE__
-        if __ONEFLOW_DEFAULT_DTYPE__ is None:
-            import torch as og_torch
-
-            dtype_orig = og_torch.get_default_dtype()
-            if dtype_orig == og_torch.float32:
-                dtype_orig = torch.float32
-        else:
-            dtype_orig = __ONEFLOW_DEFAULT_DTYPE__
-        __ONEFLOW_DEFAULT_DTYPE__ = dtype
-        # torch.set_default_dtype(dtype)
+        dtype_orig = torch.get_default_dtype()
+        torch.set_default_dtype(dtype)
         return dtype_orig
 
     @property
