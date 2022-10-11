@@ -2055,6 +2055,13 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
                     # Load from a sharded PyTorch checkpoint
                     archive_file = os.path.join(pretrained_model_name_or_path, subfolder, WEIGHTS_INDEX_NAME)
                     is_sharded = True
+                # model saved by oneflow, a directory
+                elif os.path.isdir(os.path.join(pretrained_model_name_or_path, WEIGHTS_NAME)):
+                    archive_file = os.path.join(pretrained_model_name_or_path, WEIGHTS_NAME)
+                elif subfolder is not None and os.path.isdir(
+                    os.path.join(pretrained_model_name_or_path, subfolder, WEIGHTS_NAME)
+                ):
+                    archive_file = os.path.join(pretrained_model_name_or_path, subfolder, WEIGHTS_NAME)
                 # At this stage we don't have a weight file so we will raise an error.
                 elif os.path.isfile(
                     os.path.join(pretrained_model_name_or_path, subfolder, TF_WEIGHTS_NAME + ".index")
