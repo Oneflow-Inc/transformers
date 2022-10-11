@@ -377,7 +377,7 @@ class CLIPPreTrainedModel(PreTrainedModel):
             fc_std = (2 * module.config.hidden_size) ** -0.5 * factor
             nn.init.normal_(module.fc1.weight, std=fc_std)
             nn.init.normal_(module.fc2.weight, std=in_proj_std)
-        elif isinstance(module, CLIPModel):
+        elif isinstance(module, OneFlowCLIPModel):
             nn.init.normal_(
                 module.text_projection.weight, std=module.text_embed_dim ** -0.5 * self.config.initializer_factor,
             )
@@ -841,7 +841,7 @@ class OneFlowCLIPVisionModel(CLIPPreTrainedModel):
 
 
 @add_start_docstrings(CLIP_START_DOCSTRING)
-class CLIPModel(CLIPPreTrainedModel):
+class OneFlowCLIPModel(CLIPPreTrainedModel):
     config_class = CLIPConfig
 
     def __init__(self, config: CLIPConfig):

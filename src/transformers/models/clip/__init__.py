@@ -70,7 +70,7 @@ else:
         "CLIPVisionModel",
     ]
 
-_import_structure["modeling_oneflow_clip"] = ["OneFlowCLIPTextModel", "OneFlowCLIPVisionModel"]
+_import_structure["modeling_oneflow_clip"] = ["OneFlowCLIPTextModel", "OneFlowCLIPVisionModel", "OneFlowCLIPModel"]
 
 try:
     if not is_tf_available():

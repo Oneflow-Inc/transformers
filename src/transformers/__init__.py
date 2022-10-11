@@ -2678,7 +2678,7 @@ else:
     _import_structure["trainer_tf"] = ["TFTrainer"]
 
 
-_import_structure["models.clip"].extend(["OneFlowCLIPTextModel", "OneFlowCLIPVisionModel"])
+_import_structure["models.clip"].extend(["OneFlowCLIPTextModel", "OneFlowCLIPVisionModel", "OneFlowCLIPModel"])
 
 # FLAX-backed objects
 try:
