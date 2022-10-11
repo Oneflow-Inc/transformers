@@ -143,6 +143,10 @@ def _config_zero_init(config):
 TINY_T5 = "patrickvonplaten/t5-tiny-random"
 TINY_BERT_FOR_TOKEN_CLASSIFICATION = "hf-internal-testing/tiny-bert-for-token-classification"
 
+TORCH_ONEFLOW_MODEL_MAPPING = {
+    transformers.models.clip.modeling_clip.CLIPModel: transformers.models.clip.modeling_oneflow_clip.OneFlowCLIPModel
+}
+
 
 @require_torch
 class ModelTesterMixin:
@@ -314,9 +318,6 @@ class ModelTesterMixin:
     def test_save_load_fast_init_from_base(self):
         config, inputs_dict = self.model_tester.prepare_config_and_inputs_for_common()
         base_class = MODEL_MAPPING[config.__class__]
-        TORCH_ONEFLOW_MODEL_MAPPING = {
-            transformers.models.clip.modeling_clip.CLIPModel: transformers.models.clip.modeling_oneflow_clip.OneFlowCLIPModel
-        }
         base_class = TORCH_ONEFLOW_MODEL_MAPPING[base_class]
         if isinstance(base_class, tuple):
             base_class = base_class[0]
@@ -370,6 +371,7 @@ class ModelTesterMixin:
     def test_save_load_fast_init_to_base(self):
         config, inputs_dict = self.model_tester.prepare_config_and_inputs_for_common()
         base_class = MODEL_MAPPING[config.__class__]
+        base_class = TORCH_ONEFLOW_MODEL_MAPPING[base_class]
 
         if isinstance(base_class, tuple):
             base_class = base_class[0]
