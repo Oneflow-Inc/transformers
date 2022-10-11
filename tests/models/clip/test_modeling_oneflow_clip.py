@@ -52,7 +52,7 @@ if True:
     from transformers import CLIPModel
     from transformers import OneFlowCLIPTextModel as CLIPTextModel
     from transformers import OneFlowCLIPVisionModel as CLIPVisionModel
-from transformers.models.clip.modeling_clip import CLIP_PRETRAINED_MODEL_ARCHIVE_LIST
+from transformers.models.clip.modeling_oneflow_clip import CLIP_PRETRAINED_MODEL_ARCHIVE_LIST
 
 
 def _all_close(a, b, **kwargs):
