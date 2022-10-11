@@ -728,10 +728,12 @@ class ModelTesterMixin:
             # (Even with this call, there are still memory leak by ~0.04MB)
             self.clear_torch_jit_class_registry()
 
+    @unittest.skip("oneflow doens't support fx")
     def test_torch_fx(self):
         config, inputs_dict = self.model_tester.prepare_config_and_inputs_for_common()
         self._create_and_check_torch_fx_tracing(config, inputs_dict)
 
+    @unittest.skip("oneflow doens't support fx")
     def test_torch_fx_output_loss(self):
         config, inputs_dict = self.model_tester.prepare_config_and_inputs_for_common()
         self._create_and_check_torch_fx_tracing(config, inputs_dict, output_loss=True)
