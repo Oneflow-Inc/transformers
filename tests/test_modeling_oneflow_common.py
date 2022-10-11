@@ -314,7 +314,10 @@ class ModelTesterMixin:
     def test_save_load_fast_init_from_base(self):
         config, inputs_dict = self.model_tester.prepare_config_and_inputs_for_common()
         base_class = MODEL_MAPPING[config.__class__]
-
+        TORCH_ONEFLOW_MODEL_MAPPING = {
+            transformers.models.clip.modeling_clip.CLIPModel: transformers.models.clip.modeling_oneflow_clip.OneFlowCLIPModel
+        }
+        base_class = TORCH_ONEFLOW_MODEL_MAPPING[base_class]
         if isinstance(base_class, tuple):
             base_class = base_class[0]
 
@@ -346,7 +349,15 @@ class ModelTesterMixin:
 
             # check that certain keys didn't get saved with the model
             with tempfile.TemporaryDirectory() as tmpdirname:
+                import os
+
+                print(type(model))
                 model.save_pretrained(tmpdirname)
+                for root, dirs, files in os.walk(tmpdirname):
+                    for file in files:
+                        print("file", os.path.join(root, file))
+                    for dir in dirs:
+                        print("dir", os.path.join(root, dir))
                 torch.save(state_dict, os.path.join(tmpdirname, "pytorch_model.bin"))
 
                 model_fast_init = model_class_copy.from_pretrained(tmpdirname)
