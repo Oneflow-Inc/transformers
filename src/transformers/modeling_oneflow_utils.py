@@ -39,7 +39,7 @@ def _get_default_dtype():
 
 def _set_default_dtype(dtype):
     global __ONEFLOW_DEFAULT_DTYPE__
-    print("set default dtype to ", dtype)
+    print(f"set default dtype to {__ONEFLOW_DEFAULT_DTYPE__} => {dtype}")
     __ONEFLOW_DEFAULT_DTYPE__ = dtype
 
 
