@@ -788,7 +788,7 @@ class CLIPVisionTransformer(nn.Module):
         )
 
 
-class CLIPVisionModel(CLIPPreTrainedModel):
+class OneFlowCLIPVisionModel(CLIPPreTrainedModel):
     config_class = CLIPVisionConfig
     main_input_name = "pixel_values"
 

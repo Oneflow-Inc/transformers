@@ -49,8 +49,9 @@ if True:
     import oneflow as torch
     from oneflow import nn
 
-    from transformers import CLIPModel, CLIPVisionModel
+    from transformers import CLIPModel
     from transformers import OneFlowCLIPTextModel as CLIPTextModel
+    from transformers import OneFlowCLIPVisionModel as CLIPVisionModel
 from transformers.models.clip.modeling_clip import CLIP_PRETRAINED_MODEL_ARCHIVE_LIST
 
 
