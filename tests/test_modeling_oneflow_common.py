@@ -2106,6 +2106,7 @@ class ModelTesterMixin:
             with torch.no_grad():
                 model(**inputs)[0]
 
+    @unittest.skip("oneflow does not support DataParallel")
     @require_torch_multi_gpu
     def test_multi_gpu_data_parallel_forward(self):
         config, inputs_dict = self.model_tester.prepare_config_and_inputs_for_common()
