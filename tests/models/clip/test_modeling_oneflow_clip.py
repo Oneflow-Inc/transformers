@@ -55,6 +55,12 @@ if True:
 from transformers.models.clip.modeling_clip import CLIP_PRETRAINED_MODEL_ARCHIVE_LIST
 
 
+def _all_close(a, b, **kwargs):
+    return np.allclose(a.numpy(), b.numpy(), **kwargs)
+
+
+setattr(torch, "allclose", _all_close)
+
 if is_vision_available():
     from PIL import Image
 
