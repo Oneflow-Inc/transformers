@@ -935,7 +935,7 @@ class ModuleUtilsMixin:
         return 6 * self.estimate_tokens(input_dict) * self.num_parameters(exclude_embeddings=exclude_embeddings)
 
 
-class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMixin):
+class OneFlowPreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMixin):
     r"""
     Base class for all models.
 
@@ -2740,8 +2740,8 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
         cls._auto_class = auto_class
 
 
-PreTrainedModel.push_to_hub = copy_func(PreTrainedModel.push_to_hub)
-PreTrainedModel.push_to_hub.__doc__ = PreTrainedModel.push_to_hub.__doc__.format(
+OneFlowPreTrainedModel.push_to_hub = copy_func(OneFlowPreTrainedModel.push_to_hub)
+OneFlowPreTrainedModel.push_to_hub.__doc__ = OneFlowPreTrainedModel.push_to_hub.__doc__.format(
     object="model", object_class="AutoModel", object_files="model file"
 )
 

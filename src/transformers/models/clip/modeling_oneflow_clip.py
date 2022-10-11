@@ -24,7 +24,7 @@ from oneflow import nn
 
 from ...activations_oneflow import ACT2FN
 from ...modeling_outputs import BaseModelOutput, BaseModelOutputWithPooling
-from ...modeling_oneflow_utils import PreTrainedModel
+from ...modeling_oneflow_utils import OneFlowPreTrainedModel
 from ...utils import (
     ModelOutput,
     add_start_docstrings,
@@ -339,7 +339,7 @@ class CLIPEncoderLayer(nn.Module):
         return outputs
 
 
-class CLIPPreTrainedModel(PreTrainedModel):
+class CLIPPreTrainedModel(OneFlowPreTrainedModel):
     """
     An abstract class to handle weights initialization and a simple interface for downloading and loading pretrained
     models.
