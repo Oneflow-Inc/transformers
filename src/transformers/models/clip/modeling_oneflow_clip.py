@@ -22,7 +22,7 @@ import oneflow as torch
 import oneflow.utils.checkpoint
 from oneflow import nn
 
-from ...activations import ACT2FN
+from ...activations_oneflow import ACT2FN
 from ...modeling_outputs import BaseModelOutput, BaseModelOutputWithPooling
 from ...modeling_oneflow_utils import PreTrainedModel
 from ...utils import (
