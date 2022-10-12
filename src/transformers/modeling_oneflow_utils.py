@@ -28,24 +28,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import oneflow as torch
 
-__ONEFLOW_DEFAULT_DTYPE__ = torch.float32
-
-
-def _get_default_dtype():
-    global __ONEFLOW_DEFAULT_DTYPE__
-    print("default dtype is ", __ONEFLOW_DEFAULT_DTYPE__)
-    return __ONEFLOW_DEFAULT_DTYPE__
-
-
-def _set_default_dtype(dtype):
-    global __ONEFLOW_DEFAULT_DTYPE__
-    print(f"set default dtype to {__ONEFLOW_DEFAULT_DTYPE__} => {dtype}")
-    __ONEFLOW_DEFAULT_DTYPE__ = dtype
-
-
-setattr(torch, "get_default_dtype", _get_default_dtype)
-setattr(torch, "set_default_dtype", _set_default_dtype)
-
 from packaging import version
 from oneflow import Tensor, device, nn
 from oneflow.nn import CrossEntropyLoss
