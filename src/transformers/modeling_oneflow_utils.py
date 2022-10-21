@@ -26,10 +26,11 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-import torch
+import oneflow as torch
+
 from packaging import version
-from torch import Tensor, device, nn
-from torch.nn import CrossEntropyLoss
+from oneflow import Tensor, device, nn
+from oneflow.nn import CrossEntropyLoss
 
 from transformers.utils.hub import convert_file_size_to_int, get_checkpoint_shard_files
 from transformers.utils.import_utils import is_sagemaker_mp_enabled
@@ -38,7 +39,7 @@ from .activations import get_activation
 from .configuration_utils import PretrainedConfig
 from .deepspeed import deepspeed_config, is_deepspeed_zero3_enabled
 from .dynamic_module_utils import custom_object_save
-from .generation_utils import GenerationMixin
+from .generation_oneflow_utils import GenerationMixin
 from .pytorch_utils import (  # noqa: F401
     Conv1D,
     apply_chunking_to_forward,
@@ -396,7 +397,20 @@ def load_state_dict(checkpoint_file: Union[str, os.PathLike]):
             )
         return safe_load_file(checkpoint_file)
     try:
-        return torch.load(checkpoint_file, map_location="cpu")
+        # this is oneflow saved model, a dir
+        if os.path.isdir(checkpoint_file):
+            return torch.load(checkpoint_file, map_location="cpu")
+        else:
+            import torch as og_torch
+
+            torch_parameters = og_torch.load(checkpoint_file, map_location="cpu")
+            oneflow_parameters = dict()
+            for key, value in torch_parameters.items():
+                if value.is_cuda:
+                    raise ValueError(f"torch model is not on cpu, it is on {value.device}")
+                val = value.detach().cpu().numpy()
+                oneflow_parameters[key] = val
+            return oneflow_parameters
     except Exception as e:
         try:
             with open(checkpoint_file) as f:
@@ -903,7 +917,7 @@ class ModuleUtilsMixin:
         return 6 * self.estimate_tokens(input_dict) * self.num_parameters(exclude_embeddings=exclude_embeddings)
 
 
-class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMixin):
+class OneFlowPreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMixin):
     r"""
     Base class for all models.
 
@@ -2023,6 +2037,13 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
                     # Load from a sharded PyTorch checkpoint
                     archive_file = os.path.join(pretrained_model_name_or_path, subfolder, WEIGHTS_INDEX_NAME)
                     is_sharded = True
+                # model saved by oneflow, a directory
+                elif os.path.isdir(os.path.join(pretrained_model_name_or_path, WEIGHTS_NAME)):
+                    archive_file = os.path.join(pretrained_model_name_or_path, WEIGHTS_NAME)
+                elif subfolder is not None and os.path.isdir(
+                    os.path.join(pretrained_model_name_or_path, subfolder, WEIGHTS_NAME)
+                ):
+                    archive_file = os.path.join(pretrained_model_name_or_path, subfolder, WEIGHTS_NAME)
                 # At this stage we don't have a weight file so we will raise an error.
                 elif os.path.isfile(
                     os.path.join(pretrained_model_name_or_path, subfolder, TF_WEIGHTS_NAME + ".index")
@@ -2701,8 +2722,8 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
         cls._auto_class = auto_class
 
 
-PreTrainedModel.push_to_hub = copy_func(PreTrainedModel.push_to_hub)
-PreTrainedModel.push_to_hub.__doc__ = PreTrainedModel.push_to_hub.__doc__.format(
+OneFlowPreTrainedModel.push_to_hub = copy_func(OneFlowPreTrainedModel.push_to_hub)
+OneFlowPreTrainedModel.push_to_hub.__doc__ = OneFlowPreTrainedModel.push_to_hub.__doc__.format(
     object="model", object_class="AutoModel", object_files="model file"
 )
 

@@ -58,6 +58,11 @@ def is_tensor(x):
     """
     if is_torch_fx_proxy(x):
         return True
+    if True:
+        import oneflow as torch
+
+        if isinstance(x, torch.Tensor):
+            return True
     if is_torch_available():
         import torch
 
