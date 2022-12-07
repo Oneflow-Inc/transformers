@@ -144,9 +144,17 @@ TINY_T5 = "patrickvonplaten/t5-tiny-random"
 TINY_BERT_FOR_TOKEN_CLASSIFICATION = "hf-internal-testing/tiny-bert-for-token-classification"
 
 TORCH_ONEFLOW_MODEL_MAPPING = {
-    transformers.models.clip.modeling_clip.CLIPModel: transformers.models.clip.modeling_oneflow_clip.OneFlowCLIPModel
+    transformers.models.clip.modeling_clip.CLIPModel: transformers.models.clip.modeling_oneflow_clip.OneFlowCLIPModel,
+    transformers.models.bert.modeling_bert.BertForMaskedLM: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForMaskedLM,
+    transformers.models.bert.modeling_bert.BertForMultipleChoice: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForMultipleChoice,
+    transformers.models.bert.modeling_bert.BertForNextSentencePrediction: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForNextSentencePrediction,
+    transformers.models.bert.modeling_bert.BertForPreTraining: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForPreTraining,
+    transformers.models.bert.modeling_bert.BertForQuestionAnswering: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForQuestionAnswering,
+    transformers.models.bert.modeling_bert.BertForSequenceClassification: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForSequenceClassification,
+    transformers.models.bert.modeling_bert.BertForTokenClassification: transformers.models.bert.modeling_oneflow_bert.OneFlowBertForTokenClassification,
+    transformers.models.bert.modeling_bert.BertLMHeadModel: transformers.models.bert.modeling_oneflow_bert.OneFlowBertLMHeadModel,
+    transformers.models.bert.modeling_bert.BertModel: transformers.models.bert.modeling_oneflow_bert.OneFlowBertModel,
 }
-
 
 @require_torch
 class ModelTesterMixin:
