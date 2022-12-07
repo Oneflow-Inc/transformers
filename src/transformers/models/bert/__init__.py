@@ -64,6 +64,19 @@ else:
         "load_tf_weights_in_bert",
     ]
 
+_import_structure["modeling_oneflow_bert"] = [
+    "OneFlowBertModel",
+    "OneFlowBertForMaskedLM",
+    "OneFlowBertForMultipleChoice",
+    "OneFlowBertForNextSentencePrediction",
+    "OneFlowBertForPreTraining",
+    "OneFlowBertForQuestionAnswering",
+    "OneFlowBertForSequenceClassification",
+    "OneFlowBertForTokenClassification",
+    "OneFlowBertLMHeadModel",
+    "OneFlowBertPreTrainedModel"
+]
+
 try:
     if not is_tf_available():
         raise OptionalDependencyNotAvailable()
