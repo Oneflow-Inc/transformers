@@ -32,14 +32,14 @@ ALL_LAYERNORM_LAYERS = [nn.LayerNorm]
 # is_torch_less_than_1_11 = parsed_torch_version_base < version.parse("1.11")
 
 
-# def torch_int_div(tensor1, tensor2):
-#     """
-#     A function that performs integer division across different versions of PyTorch.
-#     """
-#     if is_torch_less_than_1_8:
-#         return tensor1 // tensor2
-#     else:
-#         return torch.div(tensor1, tensor2, rounding_mode="floor")
+def torch_int_div(tensor1, tensor2):
+    """
+    A function that performs integer division across different versions of PyTorch.
+    """
+    if is_torch_less_than_1_8:
+        return tensor1 // tensor2
+    else:
+        return torch.div(tensor1, tensor2, rounding_mode="floor")
 
 
 def prune_linear_layer(layer: nn.Linear, index: torch.LongTensor, dim: int = 0) -> nn.Linear:
