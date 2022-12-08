@@ -27,17 +27,17 @@ import oneflow.utils.checkpoint
 from oneflow import nn
 from oneflow.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
-from ...activations import ACT2FN
+from ...activations_oneflow import ACT2FN
 from ...modeling_oneflow_outputs import (
-    OneFlowBaseModelOutputWithPastAndCrossAttentions,
-    OneFlowBaseModelOutputWithPoolingAndCrossAttentions,
-    OneFlowCausalLMOutputWithCrossAttentions,
-    OneFlowMaskedLMOutput,
-    OneFlowMultipleChoiceModelOutput,
-    OneFlowNextSentencePredictorOutput,
-    OneFlowQuestionAnsweringModelOutput,
-    OneFlowSequenceClassifierOutput,
-    OneFlowTokenClassifierOutput,
+    BaseModelOutputWithPastAndCrossAttentions,
+    BaseModelOutputWithPoolingAndCrossAttentions,
+    CausalLMOutputWithCrossAttentions,
+    MaskedLMOutput,
+    MultipleChoiceModelOutput,
+    NextSentencePredictorOutput,
+    QuestionAnsweringModelOutput,
+    SequenceClassifierOutput,
+    TokenClassifierOutput,
 )
 from ...modeling_oneflow_utils import OneFlowPreTrainedModel
 from ...oneflow_utils import apply_chunking_to_forward, find_pruneable_heads_and_indices, prune_linear_layer
@@ -78,7 +78,7 @@ _SEQ_CLASS_EXPECTED_OUTPUT = "'LABEL_1'"
 _SEQ_CLASS_EXPECTED_LOSS = 0.01
 
 
-ONEFLOW_BERT_PRETRAINED_MODEL_ARCHIVE_LIST = [
+BERT_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "bert-base-uncased",
     "bert-large-uncased",
     "bert-base-cased",
@@ -178,7 +178,7 @@ def load_tf_weights_in_bert(model, config, tf_checkpoint_path):
     return model
 
 
-class OneFlowBertEmbeddings(nn.Module):
+class BertEmbeddings(nn.Module):
     """Construct the embeddings from word, position and token_type embeddings."""
 
     def __init__(self, config):
@@ -240,7 +240,7 @@ class OneFlowBertEmbeddings(nn.Module):
         return embeddings
 
 
-class OneFlowBertSelfAttention(nn.Module):
+class BertSelfAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
         if config.hidden_size % config.num_attention_heads != 0 and not hasattr(config, "embedding_size"):
@@ -340,7 +340,7 @@ class OneFlowBertSelfAttention(nn.Module):
 
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
         if attention_mask is not None:
-            # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
+            # Apply the attention mask is (precomputed for all layers in OneFlowBertModel forward() function)
             attention_scores = attention_scores + attention_mask
 
         # Normalize the attention scores to probabilities.
@@ -367,7 +367,7 @@ class OneFlowBertSelfAttention(nn.Module):
         return outputs
 
 
-class OneFlowBertSelfOutput(nn.Module):
+class BertSelfOutput(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
@@ -381,11 +381,11 @@ class OneFlowBertSelfOutput(nn.Module):
         return hidden_states
 
 
-class OneFlowBertAttention(nn.Module):
+class BertAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
-        self.self = OneFlowBertSelfAttention(config, position_embedding_type=position_embedding_type)
-        self.output = OneFlowBertSelfOutput(config)
+        self.self = BertSelfAttention(config, position_embedding_type=position_embedding_type)
+        self.output = BertSelfOutput(config)
         self.pruned_heads = set()
 
     def prune_heads(self, heads):
@@ -430,7 +430,7 @@ class OneFlowBertAttention(nn.Module):
         return outputs
 
 
-class OneFlowBertIntermediate(nn.Module):
+class BertIntermediate(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.intermediate_size)
@@ -445,7 +445,7 @@ class OneFlowBertIntermediate(nn.Module):
         return hidden_states
 
 
-class OneFlowBertOutput(nn.Module):
+class BertOutput(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
@@ -459,20 +459,20 @@ class OneFlowBertOutput(nn.Module):
         return hidden_states
 
 
-class OneFlowBertLayer(nn.Module):
+class BertLayer(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
         self.seq_len_dim = 1
-        self.attention = OneFlowBertAttention(config)
+        self.attention = BertAttention(config)
         self.is_decoder = config.is_decoder
         self.add_cross_attention = config.add_cross_attention
         if self.add_cross_attention:
             if not self.is_decoder:
                 raise ValueError(f"{self} should be used as a decoder model if cross attention is added")
-            self.crossattention = OneFlowBertAttention(config, position_embedding_type="absolute")
-        self.intermediate = OneFlowBertIntermediate(config)
-        self.output = OneFlowBertOutput(config)
+            self.crossattention = BertAttention(config, position_embedding_type="absolute")
+        self.intermediate = BertIntermediate(config)
+        self.output = BertOutput(config)
 
     def forward(
         self,
@@ -545,11 +545,11 @@ class OneFlowBertLayer(nn.Module):
         return layer_output
 
 
-class OneFlowBertEncoder(nn.Module):
+class BertEncoder(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.layer = nn.ModuleList([OneFlowBertLayer(config) for _ in range(config.num_hidden_layers)])
+        self.layer = nn.ModuleList([BertLayer(config) for _ in range(config.num_hidden_layers)])
         self.gradient_checkpointing = False
 
     def forward(
@@ -564,7 +564,7 @@ class OneFlowBertEncoder(nn.Module):
         output_attentions: Optional[bool] = False,
         output_hidden_states: Optional[bool] = False,
         return_dict: Optional[bool] = True,
-    ) -> Union[Tuple[torch.Tensor], OneFlowBaseModelOutputWithPastAndCrossAttentions]:
+    ) -> Union[Tuple[torch.Tensor], BaseModelOutputWithPastAndCrossAttentions]:
         all_hidden_states = () if output_hidden_states else None
         all_self_attentions = () if output_attentions else None
         all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
@@ -633,7 +633,7 @@ class OneFlowBertEncoder(nn.Module):
                 ]
                 if v is not None
             )
-        return OneFlowBaseModelOutputWithPastAndCrossAttentions(
+        return BaseModelOutputWithPastAndCrossAttentions(
             last_hidden_state=hidden_states,
             past_key_values=next_decoder_cache,
             hidden_states=all_hidden_states,
@@ -642,7 +642,7 @@ class OneFlowBertEncoder(nn.Module):
         )
 
 
-class OneFlowBertPooler(nn.Module):
+class BertPooler(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
@@ -657,7 +657,7 @@ class OneFlowBertPooler(nn.Module):
         return pooled_output
 
 
-class OneFlowBertPredictionHeadTransform(nn.Module):
+class BertPredictionHeadTransform(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
@@ -674,10 +674,10 @@ class OneFlowBertPredictionHeadTransform(nn.Module):
         return hidden_states
 
 
-class OneFlowBertLMPredictionHead(nn.Module):
+class BertLMPredictionHead(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.transform = OneFlowBertPredictionHeadTransform(config)
+        self.transform = BertPredictionHeadTransform(config)
 
         # The output weights are the same as the input embeddings, but there is
         # an output-only bias for each token.
@@ -694,17 +694,17 @@ class OneFlowBertLMPredictionHead(nn.Module):
         return hidden_states
 
 
-class OneFlowBertOnlyMLMHead(nn.Module):
+class BertOnlyMLMHead(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.predictions = OneFlowBertLMPredictionHead(config)
+        self.predictions = BertLMPredictionHead(config)
 
     def forward(self, sequence_output: torch.Tensor) -> torch.Tensor:
         prediction_scores = self.predictions(sequence_output)
         return prediction_scores
 
 
-class OneFlowBertOnlyNSPHead(nn.Module):
+class BertOnlyNSPHead(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.seq_relationship = nn.Linear(config.hidden_size, 2)
@@ -714,10 +714,10 @@ class OneFlowBertOnlyNSPHead(nn.Module):
         return seq_relationship_score
 
 
-class OneFlowBertPreTrainingHeads(nn.Module):
+class BertPreTrainingHeads(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.predictions = OneFlowBertLMPredictionHead(config)
+        self.predictions = BertLMPredictionHead(config)
         self.seq_relationship = nn.Linear(config.hidden_size, 2)
 
     def forward(self, sequence_output, pooled_output):
@@ -755,12 +755,12 @@ class OneFlowBertPreTrainedModel(OneFlowPreTrainedModel):
             module.weight.data.fill_(1.0)
 
     def _set_gradient_checkpointing(self, module, value=False):
-        if isinstance(module, OneFlowBertEncoder):
+        if isinstance(module, BertEncoder):
             module.gradient_checkpointing = value
 
 
 @dataclass
-class OneFlowBertForPreTrainingOutput(ModelOutput):
+class BertForPreTrainingOutput(ModelOutput):
     """
     Output type of [`BertForPreTraining`].
 
@@ -880,10 +880,10 @@ class OneFlowBertModel(OneFlowBertPreTrainedModel):
         super().__init__(config)
         self.config = config
 
-        self.embeddings = OneFlowBertEmbeddings(config)
-        self.encoder = OneFlowBertEncoder(config)
+        self.embeddings = BertEmbeddings(config)
+        self.encoder = BertEncoder(config)
 
-        self.pooler = OneFlowBertPooler(config) if add_pooling_layer else None
+        self.pooler = BertPooler(config) if add_pooling_layer else None
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -906,7 +906,7 @@ class OneFlowBertModel(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowBaseModelOutputWithPoolingAndCrossAttentions,
+        output_type=BaseModelOutputWithPoolingAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
     )
     def forward(
@@ -924,7 +924,7 @@ class OneFlowBertModel(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowBaseModelOutputWithPoolingAndCrossAttentions]:
+    ) -> Union[Tuple[torch.Tensor], BaseModelOutputWithPoolingAndCrossAttentions]:
         r"""
         encoder_hidden_states  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*):
             Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -1029,7 +1029,7 @@ class OneFlowBertModel(OneFlowBertPreTrainedModel):
         if not return_dict:
             return (sequence_output, pooled_output) + encoder_outputs[1:]
 
-        return OneFlowBaseModelOutputWithPoolingAndCrossAttentions(
+        return BaseModelOutputWithPoolingAndCrossAttentions(
             last_hidden_state=sequence_output,
             pooler_output=pooled_output,
             past_key_values=encoder_outputs.past_key_values,
@@ -1051,7 +1051,7 @@ class OneFlowBertForPreTraining(OneFlowBertPreTrainedModel):
         super().__init__(config)
 
         self.bert = OneFlowBertModel(config)
-        self.cls = OneFlowBertPreTrainingHeads(config)
+        self.cls = BertPreTrainingHeads(config)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -1063,7 +1063,7 @@ class OneFlowBertForPreTraining(OneFlowBertPreTrainedModel):
         self.cls.predictions.decoder = new_embeddings
 
     @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
-    @replace_return_docstrings(output_type=OneFlowBertForPreTrainingOutput, config_class=_CONFIG_FOR_DOC)
+    @replace_return_docstrings(output_type=BertForPreTrainingOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
         input_ids: Optional[torch.Tensor] = None,
@@ -1077,7 +1077,7 @@ class OneFlowBertForPreTraining(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowBertForPreTrainingOutput]:
+    ) -> Union[Tuple[torch.Tensor], BertForPreTrainingOutput]:
         r"""
             labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
                 Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
@@ -1138,7 +1138,7 @@ class OneFlowBertForPreTraining(OneFlowBertPreTrainedModel):
             output = (prediction_scores, seq_relationship_score) + outputs[2:]
             return ((total_loss,) + output) if total_loss is not None else output
 
-        return OneFlowBertForPreTrainingOutput(
+        return BertForPreTrainingOutput(
             loss=total_loss,
             prediction_logits=prediction_scores,
             seq_relationship_logits=seq_relationship_score,
@@ -1161,7 +1161,7 @@ class OneFlowBertLMHeadModel(OneFlowBertPreTrainedModel):
         if not config.is_decoder:
             logger.warning("If you want to use `BertLMHeadModel` as a standalone, add `is_decoder=True.`")
 
-        self.bert = BertModel(config, add_pooling_layer=False)
+        self.bert = OneFlowBertModel(config, add_pooling_layer=False)
         self.cls = BertOnlyMLMHead(config)
 
         # Initialize weights and apply final processing
@@ -1177,7 +1177,7 @@ class OneFlowBertLMHeadModel(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowCausalLMOutputWithCrossAttentions,
+        output_type=CausalLMOutputWithCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
     )
     def forward(
@@ -1196,7 +1196,7 @@ class OneFlowBertLMHeadModel(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowCausalLMOutputWithCrossAttentions]:
+    ) -> Union[Tuple[torch.Tensor], CausalLMOutputWithCrossAttentions]:
         r"""
         encoder_hidden_states  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*):
             Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -1256,7 +1256,7 @@ class OneFlowBertLMHeadModel(OneFlowBertPreTrainedModel):
             output = (prediction_scores,) + outputs[2:]
             return ((lm_loss,) + output) if lm_loss is not None else output
 
-        return OneFlowCausalLMOutputWithCrossAttentions(
+        return CausalLMOutputWithCrossAttentions(
             loss=lm_loss,
             logits=prediction_scores,
             past_key_values=outputs.past_key_values,
@@ -1300,7 +1300,7 @@ class OneFlowBertForMaskedLM(OneFlowBertPreTrainedModel):
             )
 
         self.bert = OneFlowBertModel(config, add_pooling_layer=False)
-        self.cls = OneFlowBertOnlyMLMHead(config)
+        self.cls = BertOnlyMLMHead(config)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -1315,7 +1315,7 @@ class OneFlowBertForMaskedLM(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowMaskedLMOutput,
+        output_type=MaskedLMOutput,
         config_class=_CONFIG_FOR_DOC,
         expected_output="'paris'",
         expected_loss=0.88,
@@ -1334,7 +1334,7 @@ class OneFlowBertForMaskedLM(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowMaskedLMOutput]:
+    ) -> Union[Tuple[torch.Tensor], MaskedLMOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
             Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
@@ -1370,7 +1370,7 @@ class OneFlowBertForMaskedLM(OneFlowBertPreTrainedModel):
             output = (prediction_scores,) + outputs[2:]
             return ((masked_lm_loss,) + output) if masked_lm_loss is not None else output
 
-        return OneFlowMaskedLMOutput(
+        return MaskedLMOutput(
             loss=masked_lm_loss,
             logits=prediction_scores,
             hidden_states=outputs.hidden_states,
@@ -1403,13 +1403,13 @@ class OneFlowBertForNextSentencePrediction(OneFlowBertPreTrainedModel):
         super().__init__(config)
 
         self.bert = OneFlowBertModel(config)
-        self.cls = OneFlowBertOnlyNSPHead(config)
+        self.cls = BertOnlyNSPHead(config)
 
         # Initialize weights and apply final processing
         self.post_init()
 
     @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
-    @replace_return_docstrings(output_type=OneFlowNextSentencePredictorOutput, config_class=_CONFIG_FOR_DOC)
+    @replace_return_docstrings(output_type=NextSentencePredictorOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
         input_ids: Optional[torch.Tensor] = None,
@@ -1423,7 +1423,7 @@ class OneFlowBertForNextSentencePrediction(OneFlowBertPreTrainedModel):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
         **kwargs,
-    ) -> Union[Tuple[torch.Tensor], OneFlowNextSentencePredictorOutput]:
+    ) -> Union[Tuple[torch.Tensor], NextSentencePredictorOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the next sequence prediction (classification) loss. Input should be a sequence pair
@@ -1488,7 +1488,7 @@ class OneFlowBertForNextSentencePrediction(OneFlowBertPreTrainedModel):
             output = (seq_relationship_scores,) + outputs[2:]
             return ((next_sentence_loss,) + output) if next_sentence_loss is not None else output
 
-        return OneFlowNextSentencePredictorOutput(
+        return NextSentencePredictorOutput(
             loss=next_sentence_loss,
             logits=seq_relationship_scores,
             hidden_states=outputs.hidden_states,
@@ -1523,7 +1523,7 @@ class OneFlowBertForSequenceClassification(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_SEQUENCE_CLASSIFICATION,
-        output_type=OneFlowSequenceClassifierOutput,
+        output_type=SequenceClassifierOutput,
         config_class=_CONFIG_FOR_DOC,
         expected_output=_SEQ_CLASS_EXPECTED_OUTPUT,
         expected_loss=_SEQ_CLASS_EXPECTED_LOSS,
@@ -1540,7 +1540,7 @@ class OneFlowBertForSequenceClassification(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowSequenceClassifierOutput]:
+    ) -> Union[Tuple[torch.Tensor], SequenceClassifierOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
@@ -1592,7 +1592,7 @@ class OneFlowBertForSequenceClassification(OneFlowBertPreTrainedModel):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return OneFlowSequenceClassifierOutput(
+        return SequenceClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
@@ -1625,7 +1625,7 @@ class OneFlowBertForMultipleChoice(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowMultipleChoiceModelOutput,
+        output_type=MultipleChoiceModelOutput,
         config_class=_CONFIG_FOR_DOC,
     )
     def forward(
@@ -1640,7 +1640,7 @@ class OneFlowBertForMultipleChoice(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowMultipleChoiceModelOutput]:
+    ) -> Union[Tuple[torch.Tensor], MultipleChoiceModelOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the multiple choice classification loss. Indices should be in `[0, ...,
@@ -1676,6 +1676,7 @@ class OneFlowBertForMultipleChoice(OneFlowBertPreTrainedModel):
 
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
+        print(logits.shape, num_choices)
         reshaped_logits = logits.view(-1, num_choices)
 
         loss = None
@@ -1687,7 +1688,7 @@ class OneFlowBertForMultipleChoice(OneFlowBertPreTrainedModel):
             output = (reshaped_logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return OneFlowMultipleChoiceModelOutput(
+        return MultipleChoiceModelOutput(
             loss=loss,
             logits=reshaped_logits,
             hidden_states=outputs.hidden_states,
@@ -1724,7 +1725,7 @@ class OneFlowBertForTokenClassification(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_TOKEN_CLASSIFICATION,
-        output_type=OneFlowTokenClassifierOutput,
+        output_type=TokenClassifierOutput,
         config_class=_CONFIG_FOR_DOC,
         expected_output=_TOKEN_CLASS_EXPECTED_OUTPUT,
         expected_loss=_TOKEN_CLASS_EXPECTED_LOSS,
@@ -1741,7 +1742,7 @@ class OneFlowBertForTokenClassification(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowTokenClassifierOutput]:
+    ) -> Union[Tuple[torch.Tensor], TokenClassifierOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
             Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
@@ -1774,7 +1775,7 @@ class OneFlowBertForTokenClassification(OneFlowBertPreTrainedModel):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return OneFlowTokenClassifierOutput(
+        return TokenClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
@@ -1807,7 +1808,7 @@ class OneFlowBertForQuestionAnswering(OneFlowBertPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_QA,
-        output_type=OneFlowQuestionAnsweringModelOutput,
+        output_type=QuestionAnsweringModelOutput,
         config_class=_CONFIG_FOR_DOC,
         qa_target_start_index=_QA_TARGET_START_INDEX,
         qa_target_end_index=_QA_TARGET_END_INDEX,
@@ -1827,7 +1828,7 @@ class OneFlowBertForQuestionAnswering(OneFlowBertPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowQuestionAnsweringModelOutput]:
+    ) -> Union[Tuple[torch.Tensor], QuestionAnsweringModelOutput]:
         r"""
         start_positions (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for position (index) of the start of the labelled span for computing the token classification loss.
@@ -1880,7 +1881,7 @@ class OneFlowBertForQuestionAnswering(OneFlowBertPreTrainedModel):
             output = (start_logits, end_logits) + outputs[2:]
             return ((total_loss,) + output) if total_loss is not None else output
 
-        return OneFlowQuestionAnsweringModelOutput(
+        return QuestionAnsweringModelOutput(
             loss=total_loss,
             start_logits=start_logits,
             end_logits=end_logits,

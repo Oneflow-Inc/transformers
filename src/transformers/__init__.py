@@ -788,6 +788,7 @@ else:
     ]
     _import_structure["generation_utils"] = ["top_k_top_p_filtering"]
     _import_structure["modeling_outputs"] = []
+    _import_structure["modeling_oneflow_outputs"] = []
     _import_structure["modeling_utils"] = ["PreTrainedModel"]
 
     # PyTorch models structure
@@ -2725,6 +2726,18 @@ else:
 
 
 _import_structure["models.clip"].extend(["OneFlowCLIPTextModel", "OneFlowCLIPVisionModel", "OneFlowCLIPModel"])
+_import_structure["models.bert"].extend([
+    "OneFlowBertModel",
+    "OneFlowBertForMaskedLM",
+    "OneFlowBertForMultipleChoice",
+    "OneFlowBertForNextSentencePrediction",
+    "OneFlowBertForPreTraining",
+    "OneFlowBertForQuestionAnswering",
+    "OneFlowBertForSequenceClassification",
+    "OneFlowBertForTokenClassification",
+    "OneFlowBertLMHeadModel",
+    "OneFlowBertPreTrainedModel"
+])
 
 # FLAX-backed objects
 try:

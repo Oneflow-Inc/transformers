@@ -25,14 +25,14 @@ from oneflow.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 from ...activations_oneflow import ACT2FN, gelu
 from ...modeling_oneflow_outputs import (
-    OneFlowBaseModelOutputWithPastAndCrossAttentions,
-    OneFlowBaseModelOutputWithPoolingAndCrossAttentions,
-    OneFlowCausalLMOutputWithCrossAttentions,
-    OneFlowMaskedLMOutput,
-    OneFlowMultipleChoiceModelOutput,
-    OneFlowQuestionAnsweringModelOutput,
-    OneFlowSequenceClassifierOutput,
-    OneFlowTokenClassifierOutput,
+    BaseModelOutputWithPastAndCrossAttentions,
+    BaseModelOutputWithPoolingAndCrossAttentions,
+    CausalLMOutputWithCrossAttentions,
+    MaskedLMOutput,
+    MultipleChoiceModelOutput,
+    QuestionAnsweringModelOutput,
+    SequenceClassifierOutput,
+    TokenClassifierOutput,
 )
 from ...modeling_oneflow_utils import OneFlowPreTrainedModel
 from ...oneflow_utils import apply_chunking_to_forward, find_pruneable_heads_and_indices, prune_linear_layer
@@ -481,7 +481,7 @@ class OneFlowRobertaEncoder(nn.Module):
         output_attentions: Optional[bool] = False,
         output_hidden_states: Optional[bool] = False,
         return_dict: Optional[bool] = True,
-    ) -> Union[Tuple[torch.Tensor], OneFlowBaseModelOutputWithPastAndCrossAttentions]:
+    ) -> Union[Tuple[torch.Tensor], BaseModelOutputWithPastAndCrossAttentions]:
         all_hidden_states = () if output_hidden_states else None
         all_self_attentions = () if output_attentions else None
         all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
@@ -550,7 +550,7 @@ class OneFlowRobertaEncoder(nn.Module):
                 ]
                 if v is not None
             )
-        return OneFlowBaseModelOutputWithPastAndCrossAttentions(
+        return BaseModelOutputWithPastAndCrossAttentions(
             last_hidden_state=hidden_states,
             past_key_values=next_decoder_cache,
             hidden_states=all_hidden_states,
@@ -735,7 +735,7 @@ class OneFlowRobertaModel(OneFlowRobertaPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowBaseModelOutputWithPoolingAndCrossAttentions,
+        output_type=BaseModelOutputWithPoolingAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
     )
     # Copied from transformers.models.bert.modeling_bert.BertModel.forward
@@ -754,7 +754,7 @@ class OneFlowRobertaModel(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowBaseModelOutputWithPoolingAndCrossAttentions]:
+    ) -> Union[Tuple[torch.Tensor], BaseModelOutputWithPoolingAndCrossAttentions]:
         r"""
         encoder_hidden_states  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*):
             Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -859,7 +859,7 @@ class OneFlowRobertaModel(OneFlowRobertaPreTrainedModel):
         if not return_dict:
             return (sequence_output, pooled_output) + encoder_outputs[1:]
 
-        return OneFlowBaseModelOutputWithPoolingAndCrossAttentions(
+        return BaseModelOutputWithPoolingAndCrossAttentions(
             last_hidden_state=sequence_output,
             pooler_output=pooled_output,
             past_key_values=encoder_outputs.past_key_values,
@@ -899,7 +899,7 @@ class OneFlowRobertaForCausalLM(OneFlowRobertaPreTrainedModel):
         self.lm_head.decoder = new_embeddings
 
     @add_start_docstrings_to_model_forward(ROBERTA_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
-    @replace_return_docstrings(output_type=OneFlowCausalLMOutputWithCrossAttentions, config_class=_CONFIG_FOR_DOC)
+    @replace_return_docstrings(output_type=CausalLMOutputWithCrossAttentions, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
@@ -916,7 +916,7 @@ class OneFlowRobertaForCausalLM(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowCausalLMOutputWithCrossAttentions]:
+    ) -> Union[Tuple[torch.Tensor], CausalLMOutputWithCrossAttentions]:
         r"""
         encoder_hidden_states  (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`, *optional*):
             Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
@@ -995,7 +995,7 @@ class OneFlowRobertaForCausalLM(OneFlowRobertaPreTrainedModel):
             output = (prediction_scores,) + outputs[2:]
             return ((lm_loss,) + output) if lm_loss is not None else output
 
-        return OneFlowCausalLMOutputWithCrossAttentions(
+        return CausalLMOutputWithCrossAttentions(
             loss=lm_loss,
             logits=prediction_scores,
             past_key_values=outputs.past_key_values,
@@ -1057,7 +1057,7 @@ class OneFlowRobertaForMaskedLM(OneFlowRobertaPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowMaskedLMOutput,
+        output_type=MaskedLMOutput,
         config_class=_CONFIG_FOR_DOC,
         mask="<mask>",
         expected_output="' Paris'",
@@ -1077,7 +1077,7 @@ class OneFlowRobertaForMaskedLM(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowMaskedLMOutput]:
+    ) -> Union[Tuple[torch.Tensor], MaskedLMOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
             Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
@@ -1113,7 +1113,7 @@ class OneFlowRobertaForMaskedLM(OneFlowRobertaPreTrainedModel):
             output = (prediction_scores,) + outputs[2:]
             return ((masked_lm_loss,) + output) if masked_lm_loss is not None else output
 
-        return OneFlowMaskedLMOutput(
+        return MaskedLMOutput(
             loss=masked_lm_loss,
             logits=prediction_scores,
             hidden_states=outputs.hidden_states,
@@ -1173,7 +1173,7 @@ class OneFlowRobertaForSequenceClassification(OneFlowRobertaPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint="cardiffnlp/twitter-roberta-base-emotion",
-        output_type=OneFlowSequenceClassifierOutput,
+        output_type=SequenceClassifierOutput,
         config_class=_CONFIG_FOR_DOC,
         expected_output="'optimism'",
         expected_loss=0.08,
@@ -1190,7 +1190,7 @@ class OneFlowRobertaForSequenceClassification(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowSequenceClassifierOutput]:
+    ) -> Union[Tuple[torch.Tensor], SequenceClassifierOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
@@ -1240,7 +1240,7 @@ class OneFlowRobertaForSequenceClassification(OneFlowRobertaPreTrainedModel):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return OneFlowSequenceClassifierOutput(
+        return SequenceClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
@@ -1272,7 +1272,7 @@ class OneFlowRobertaForMultipleChoice(OneFlowRobertaPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=OneFlowMultipleChoiceModelOutput,
+        output_type=MultipleChoiceModelOutput,
         config_class=_CONFIG_FOR_DOC,
     )
     def forward(
@@ -1287,7 +1287,7 @@ class OneFlowRobertaForMultipleChoice(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowMultipleChoiceModelOutput]:
+    ) -> Union[Tuple[torch.Tensor], MultipleChoiceModelOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the multiple choice classification loss. Indices should be in `[0, ...,
@@ -1333,7 +1333,7 @@ class OneFlowRobertaForMultipleChoice(OneFlowRobertaPreTrainedModel):
             output = (reshaped_logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return OneFlowMultipleChoiceModelOutput(
+        return MultipleChoiceModelOutput(
             loss=loss,
             logits=reshaped_logits,
             hidden_states=outputs.hidden_states,
@@ -1370,7 +1370,7 @@ class OneFlowRobertaForTokenClassification(OneFlowRobertaPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint="Jean-Baptiste/roberta-large-ner-english",
-        output_type=OneFlowTokenClassifierOutput,
+        output_type=TokenClassifierOutput,
         config_class=_CONFIG_FOR_DOC,
         expected_output="['O', 'ORG', 'ORG', 'O', 'O', 'O', 'O', 'O', 'LOC', 'O', 'LOC', 'LOC']",
         expected_loss=0.01,
@@ -1387,7 +1387,7 @@ class OneFlowRobertaForTokenClassification(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowTokenClassifierOutput]:
+    ) -> Union[Tuple[torch.Tensor], TokenClassifierOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
             Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.
@@ -1420,7 +1420,7 @@ class OneFlowRobertaForTokenClassification(OneFlowRobertaPreTrainedModel):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return OneFlowTokenClassifierOutput(
+        return TokenClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
@@ -1475,7 +1475,7 @@ class OneFlowRobertaForQuestionAnswering(OneFlowRobertaPreTrainedModel):
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
         checkpoint="deepset/roberta-base-squad2",
-        output_type=OneFlowQuestionAnsweringModelOutput,
+        output_type=QuestionAnsweringModelOutput,
         config_class=_CONFIG_FOR_DOC,
         expected_output="' puppet'",
         expected_loss=0.86,
@@ -1493,7 +1493,7 @@ class OneFlowRobertaForQuestionAnswering(OneFlowRobertaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple[torch.Tensor], OneFlowQuestionAnsweringModelOutput]:
+    ) -> Union[Tuple[torch.Tensor], QuestionAnsweringModelOutput]:
         r"""
         start_positions (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for position (index) of the start of the labelled span for computing the token classification loss.
@@ -1546,7 +1546,7 @@ class OneFlowRobertaForQuestionAnswering(OneFlowRobertaPreTrainedModel):
             output = (start_logits, end_logits) + outputs[2:]
             return ((total_loss,) + output) if total_loss is not None else output
 
-        return OneFlowQuestionAnsweringModelOutput(
+        return QuestionAnsweringModelOutput(
             loss=total_loss,
             start_logits=start_logits,
             end_logits=end_logits,

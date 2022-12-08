@@ -21,7 +21,7 @@ from .utils import ModelOutput
 
 
 @dataclass
-class OneFlowBaseModelOutput(ModelOutput):
+class BaseModelOutput(ModelOutput):
     """
     Base class for model's outputs, with potential hidden states and attentions.
 
@@ -47,7 +47,7 @@ class OneFlowBaseModelOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithNoAttention(ModelOutput):
+class BaseModelOutputWithNoAttention(ModelOutput):
     """
     Base class for model's outputs, with potential hidden states.
 
@@ -66,7 +66,7 @@ class OneFlowBaseModelOutputWithNoAttention(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithPooling(ModelOutput):
+class BaseModelOutputWithPooling(ModelOutput):
     """
     Base class for model's outputs that also contains a pooling of the last hidden states.
 
@@ -98,7 +98,7 @@ class OneFlowBaseModelOutputWithPooling(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithPoolingAndNoAttention(ModelOutput):
+class BaseModelOutputWithPoolingAndNoAttention(ModelOutput):
     """
     Base class for model's outputs that also contains a pooling of the last hidden states.
 
@@ -120,7 +120,7 @@ class OneFlowBaseModelOutputWithPoolingAndNoAttention(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithPast(ModelOutput):
+class BaseModelOutputWithPast(ModelOutput):
     """
     Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
 
@@ -159,7 +159,7 @@ class OneFlowBaseModelOutputWithPast(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithCrossAttentions(ModelOutput):
+class BaseModelOutputWithCrossAttentions(ModelOutput):
     """
     Base class for model's outputs, with potential hidden states and attentions.
 
@@ -192,7 +192,7 @@ class OneFlowBaseModelOutputWithCrossAttentions(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithPoolingAndCrossAttentions(ModelOutput):
+class BaseModelOutputWithPoolingAndCrossAttentions(ModelOutput):
     """
     Base class for model's outputs that also contains a pooling of the last hidden states.
 
@@ -241,7 +241,7 @@ class OneFlowBaseModelOutputWithPoolingAndCrossAttentions(ModelOutput):
 
 
 @dataclass
-class OneFlowBaseModelOutputWithPastAndCrossAttentions(ModelOutput):
+class BaseModelOutputWithPastAndCrossAttentions(ModelOutput):
     """
     Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
 
@@ -287,7 +287,7 @@ class OneFlowBaseModelOutputWithPastAndCrossAttentions(ModelOutput):
 
 
 @dataclass
-class OneFlowSeq2SeqModelOutput(ModelOutput):
+class Seq2SeqModelOutput(ModelOutput):
     """
     Base class for model encoder's outputs that also contains : pre-computed hidden states that can speed up sequential
     decoding.
@@ -348,7 +348,7 @@ class OneFlowSeq2SeqModelOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowCausalLMOutput(ModelOutput):
+class CausalLMOutput(ModelOutput):
     """
     Base class for causal language model (or autoregressive) outputs.
 
@@ -377,7 +377,7 @@ class OneFlowCausalLMOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowCausalLMOutputWithPast(ModelOutput):
+class CausalLMOutputWithPast(ModelOutput):
     """
     Base class for causal language model (or autoregressive) outputs.
 
@@ -413,7 +413,7 @@ class OneFlowCausalLMOutputWithPast(ModelOutput):
 
 
 @dataclass
-class OneFlowCausalLMOutputWithCrossAttentions(ModelOutput):
+class CausalLMOutputWithCrossAttentions(ModelOutput):
     """
     Base class for causal language model (or autoregressive) outputs.
 
@@ -457,7 +457,7 @@ class OneFlowCausalLMOutputWithCrossAttentions(ModelOutput):
 
 
 @dataclass
-class OneFlowSequenceClassifierOutputWithPast(ModelOutput):
+class SequenceClassifierOutputWithPast(ModelOutput):
     """
     Base class for outputs of sentence classification models.
 
@@ -493,7 +493,7 @@ class OneFlowSequenceClassifierOutputWithPast(ModelOutput):
 
 
 @dataclass
-class OneFlowMaskedLMOutput(ModelOutput):
+class MaskedLMOutput(ModelOutput):
     """
     Base class for masked language models outputs.
 
@@ -522,7 +522,7 @@ class OneFlowMaskedLMOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowSeq2SeqLMOutput(ModelOutput):
+class Seq2SeqLMOutput(ModelOutput):
     """
     Base class for sequence-to-sequence language models outputs.
 
@@ -582,7 +582,7 @@ class OneFlowSeq2SeqLMOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowNextSentencePredictorOutput(ModelOutput):
+class NextSentencePredictorOutput(ModelOutput):
     """
     Base class for outputs of models predicting if two sentences are consecutive or not.
 
@@ -612,7 +612,7 @@ class OneFlowNextSentencePredictorOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowSequenceClassifierOutput(ModelOutput):
+class SequenceClassifierOutput(ModelOutput):
     """
     Base class for outputs of sentence classification models.
 
@@ -641,7 +641,7 @@ class OneFlowSequenceClassifierOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowSeq2SeqSequenceClassifierOutput(ModelOutput):
+class Seq2SeqSequenceClassifierOutput(ModelOutput):
     """
     Base class for outputs of sequence-to-sequence sentence classification models.
 
@@ -701,7 +701,7 @@ class OneFlowSeq2SeqSequenceClassifierOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowMultipleChoiceModelOutput(ModelOutput):
+class MultipleChoiceModelOutput(ModelOutput):
     """
     Base class for outputs of multiple choice models.
 
@@ -732,7 +732,7 @@ class OneFlowMultipleChoiceModelOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowTokenClassifierOutput(ModelOutput):
+class TokenClassifierOutput(ModelOutput):
     """
     Base class for outputs of token classification models.
 
@@ -761,7 +761,7 @@ class OneFlowTokenClassifierOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowQuestionAnsweringModelOutput(ModelOutput):
+class QuestionAnsweringModelOutput(ModelOutput):
     """
     Base class for outputs of question answering models.
 
@@ -793,7 +793,7 @@ class OneFlowQuestionAnsweringModelOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowSeq2SeqQuestionAnsweringModelOutput(ModelOutput):
+class Seq2SeqQuestionAnsweringModelOutput(ModelOutput):
     """
     Base class for outputs of sequence-to-sequence question answering models.
 
@@ -856,7 +856,7 @@ class OneFlowSeq2SeqQuestionAnsweringModelOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowSemanticSegmenterOutput(ModelOutput):
+class SemanticSegmenterOutput(ModelOutput):
     """
     Base class for outputs of semantic segmentation models.
 
@@ -894,7 +894,7 @@ class OneFlowSemanticSegmenterOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowImageClassifierOutput(ModelOutput):
+class ImageClassifierOutput(ModelOutput):
     """
     Base class for outputs of image classification models.
 
@@ -922,7 +922,7 @@ class OneFlowImageClassifierOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowImageClassifierOutputWithNoAttention(ModelOutput):
+class ImageClassifierOutputWithNoAttention(ModelOutput):
     """
     Base class for outputs of image classification models.
 
@@ -943,7 +943,7 @@ class OneFlowImageClassifierOutputWithNoAttention(ModelOutput):
 
 
 @dataclass
-class OneFlowDepthEstimatorOutput(ModelOutput):
+class DepthEstimatorOutput(ModelOutput):
     """
     Base class for outputs of depth estimation models.
 
@@ -973,7 +973,7 @@ class OneFlowDepthEstimatorOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowWav2Vec2BaseModelOutput(ModelOutput):
+class Wav2Vec2BaseModelOutput(ModelOutput):
     """
     Base class for models that have been trained with the Wav2Vec2 loss objective.
 
@@ -1002,7 +1002,7 @@ class OneFlowWav2Vec2BaseModelOutput(ModelOutput):
 
 
 @dataclass
-class OneFlowXVectorOutput(ModelOutput):
+class XVectorOutput(ModelOutput):
     """
     Output type of [`Wav2Vec2ForXVector`].
 

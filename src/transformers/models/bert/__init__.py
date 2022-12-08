@@ -65,7 +65,7 @@ else:
     ]
 
 _import_structure["modeling_oneflow_bert"] = [
-    "ONEFLOW_BERT_PRETRAINED_MODEL_ARCHIVE_LIST",
+    "OneFlowBertModel",
     "OneFlowBertForMaskedLM",
     "OneFlowBertForMultipleChoice",
     "OneFlowBertForNextSentencePrediction",
@@ -73,10 +73,8 @@ _import_structure["modeling_oneflow_bert"] = [
     "OneFlowBertForQuestionAnswering",
     "OneFlowBertForSequenceClassification",
     "OneFlowBertForTokenClassification",
-    "OneFlowBertLayer",
     "OneFlowBertLMHeadModel",
-    "OneFlowBertModel",
-    "OneFlowBertPreTrainedModel",
+    "OneFlowBertPreTrainedModel"
 ]
 
 try:
