@@ -2530,6 +2530,13 @@ class OneFlowPreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushT
                 remove_prefix_from_model,
                 ignore_mismatched_sizes,
             )
+
+            if dtype == torch.float16:
+                import numpy as np
+                for key,value in state_dict.items():
+                    if value.dtype == np.float32:
+                        state_dict[key] = value.astype(np.float16)
+
             error_msgs = _load_state_dict_into_model(model_to_load, state_dict, start_prefix)
         else:
             # Sharded checkpoint or whole but low_cpu_mem_usage==True
