@@ -31,6 +31,17 @@ ALL_LAYERNORM_LAYERS = [nn.LayerNorm]
 # is_torch_greater_or_equal_than_1_10 = parsed_torch_version_base >= version.parse("1.10")
 # is_torch_less_than_1_11 = parsed_torch_version_base < version.parse("1.11")
 
+
+def torch_int_div(tensor1, tensor2):
+    """
+    A function that performs integer division across different versions of PyTorch.
+    """
+    if is_torch_less_than_1_8:
+        return tensor1 // tensor2
+    else:
+        return torch.div(tensor1, tensor2, rounding_mode="floor")
+
+
 def prune_linear_layer(layer: nn.Linear, index: torch.LongTensor, dim: int = 0) -> nn.Linear:
     """
     Prune a linear layer to keep only entries in index.
@@ -63,6 +74,89 @@ def prune_linear_layer(layer: nn.Linear, index: torch.LongTensor, dim: int = 0) 
         new_layer.bias.copy_(b.contiguous())
         new_layer.bias.requires_grad = True
     return new_layer
+
+
+class Conv1D(nn.Module):
+    """
+    1D-convolutional layer as defined by Radford et al. for OpenAI GPT (and also used in GPT-2).
+
+    Basically works like a linear layer but the weights are transposed.
+
+    Args:
+        nf (`int`): The number of output features.
+        nx (`int`): The number of input features.
+    """
+
+    def __init__(self, nf, nx):
+        super().__init__()
+        self.nf = nf
+        w = torch.empty(nx, nf)
+        nn.init.normal_(w, std=0.02)
+        self.weight = nn.Parameter(w)
+        self.bias = nn.Parameter(torch.zeros(nf))
+
+    def forward(self, x):
+        size_out = x.size()[:-1] + (self.nf,)
+        x = torch.addmm(self.bias, x.view(-1, x.size(-1)), self.weight)
+        x = x.view(size_out)
+        return x
+
+
+def prune_conv1d_layer(layer: Conv1D, index: torch.LongTensor, dim: int = 1) -> Conv1D:
+    """
+    Prune a Conv1D layer to keep only entries in index. A Conv1D work as a Linear layer (see e.g. BERT) but the weights
+    are transposed.
+
+    Used to remove heads.
+
+    Args:
+        layer ([`~pytorch_utils.Conv1D`]): The layer to prune.
+        index (`torch.LongTensor`): The indices to keep in the layer.
+        dim (`int`, *optional*, defaults to 1): The dimension on which to keep the indices.
+
+    Returns:
+        [`~pytorch_utils.Conv1D`]: The pruned layer as a new layer with `requires_grad=True`.
+    """
+    index = index.to(layer.weight.device)
+    W = layer.weight.index_select(dim, index).clone().detach()
+    if dim == 0:
+        b = layer.bias.clone().detach()
+    else:
+        b = layer.bias[index].clone().detach()
+    new_size = list(layer.weight.size())
+    new_size[dim] = len(index)
+    new_layer = Conv1D(new_size[1], new_size[0]).to(layer.weight.device)
+    new_layer.weight.requires_grad = False
+    new_layer.weight.copy_(W.contiguous())
+    new_layer.weight.requires_grad = True
+    new_layer.bias.requires_grad = False
+    new_layer.bias.copy_(b.contiguous())
+    new_layer.bias.requires_grad = True
+    return new_layer
+
+
+def prune_layer(
+    layer: Union[nn.Linear, Conv1D], index: torch.LongTensor, dim: Optional[int] = None
+) -> Union[nn.Linear, Conv1D]:
+    """
+    Prune a Conv1D or linear layer to keep only entries in index.
+
+    Used to remove heads.
+
+    Args:
+        layer (`Union[torch.nn.Linear, Conv1D]`): The layer to prune.
+        index (`torch.LongTensor`): The indices to keep in the layer.
+        dim (`int`, *optional*): The dimension on which to keep the indices.
+
+    Returns:
+        `torch.nn.Linear` or [`~pytorch_utils.Conv1D`]: The pruned layer as a new layer with `requires_grad=True`.
+    """
+    if isinstance(layer, nn.Linear):
+        return prune_linear_layer(layer, index, dim=0 if dim is None else dim)
+    elif isinstance(layer, Conv1D):
+        return prune_conv1d_layer(layer, index, dim=1 if dim is None else dim)
+    else:
+        raise ValueError(f"Can't prune layer of class {layer.__class__}")
 
 
 def apply_chunking_to_forward(

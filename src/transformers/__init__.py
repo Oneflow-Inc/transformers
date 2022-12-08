@@ -2039,6 +2039,18 @@ else:
             "XLMRobertaModel",
         ]
     )
+    _import_structure["models.xlm_roberta"].extend(
+        [
+            "OneFlowXLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "OneFlowXLMRobertaForCausalLM",
+            "OneFlowXLMRobertaForMaskedLM",
+            "OneFlowXLMRobertaForMultipleChoice",
+            "OneFlowXLMRobertaForQuestionAnswering",
+            "OneFlowXLMRobertaForSequenceClassification",
+            "OneFlowXLMRobertaForTokenClassification",
+            "OneFlowXLMRobertaModel",
+        ]
+    )
     _import_structure["models.xlm_roberta_xl"].extend(
         [
             "XLM_ROBERTA_XL_PRETRAINED_MODEL_ARCHIVE_LIST",
@@ -2098,6 +2110,40 @@ else:
     _import_structure["trainer"] = ["Trainer"]
     _import_structure["trainer_pt_utils"] = ["torch_distributed_zero_first"]
     _import_structure["trainer_seq2seq"] = ["Seq2SeqTrainer"]
+
+
+# OneFlow-backed objects
+_import_structure["models.bert"].extend(
+    [
+        "ONEFLOW_BERT_PRETRAINED_MODEL_ARCHIVE_LIST",
+        "OneFlowBertForMaskedLM",
+        "OneFlowBertForMultipleChoice",
+        "OneFlowBertForNextSentencePrediction",
+        "OneFlowBertForPreTraining",
+        "OneFlowBertForQuestionAnswering",
+        "OneFlowBertForSequenceClassification",
+        "OneFlowBertForTokenClassification",
+        "OneFlowBertLayer",
+        "OneFlowBertLMHeadModel",
+        "OneFlowBertModel",
+        "OneFlowBertPreTrainedModel",
+    ]
+)
+
+_import_structure["models.roberta"].extend(
+    [
+        "ONEFLOW_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST",
+        "OneFlowRobertaForCausalLM",
+        "OneFlowRobertaForMaskedLM",
+        "OneFlowRobertaForMultipleChoice",
+        "OneFlowRobertaForQuestionAnswering",
+        "OneFlowRobertaForSequenceClassification",
+        "OneFlowRobertaForTokenClassification",
+        "OneFlowRobertaMainLayer",
+        "OneFlowRobertaModel",
+        "OneFlowRobertaPreTrainedModel",
+    ]
+)
 
 # TensorFlow-backed objects
 try:
@@ -4652,6 +4698,16 @@ if TYPE_CHECKING:
             XLMRobertaForTokenClassification,
             XLMRobertaModel,
         )
+        from .models.xlm_roberta import (
+            OneflowXLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST,
+            OneflowXLMRobertaForCausalLM,
+            OneflowXLMRobertaForMaskedLM,
+            OneflowXLMRobertaForMultipleChoice,
+            OneflowXLMRobertaForQuestionAnswering,
+            OneflowXLMRobertaForSequenceClassification,
+            OneflowXLMRobertaForTokenClassification,
+            OneflowXLMRobertaModel,
+        )
         from .models.xlm_roberta_xl import (
             XLM_ROBERTA_XL_PRETRAINED_MODEL_ARCHIVE_LIST,
             XLMRobertaXLForCausalLM,
@@ -4712,6 +4768,36 @@ if TYPE_CHECKING:
         from .trainer_pt_utils import torch_distributed_zero_first
         from .trainer_seq2seq import Seq2SeqTrainer
 
+    # OneFlow
+    from .models.bert import (
+        ONEFLOW_BERT_PRETRAINED_MODEL_ARCHIVE_LIST,
+        OneFlowBertForMaskedLM,
+        OneFlowBertForMultipleChoice,
+        OneFlowBertForNextSentencePrediction,
+        OneFlowBertForPreTraining,
+        OneFlowBertForQuestionAnswering,
+        OneFlowBertForSequenceClassification,
+        OneFlowBertForTokenClassification,
+        OneFlowBertLayer,
+        OneFlowBertLMHeadModel,
+        OneFlowBertModel,
+        OneFlowBertPreTrainedModel,
+    )
+
+    # OneFlow
+    from .models.roberta import (
+        ONEFLOW_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST,
+        OneFlowRobertaForCausalLM,
+        OneFlowRobertaForMaskedLM,
+        OneFlowRobertaForMultipleChoice,
+        OneFlowRobertaForQuestionAnswering,
+        OneFlowRobertaForSequenceClassification,
+        OneFlowRobertaForTokenClassification,
+        OneFlowRobertaModel,
+        OneFlowRobertaPreTrainedModel,
+    )
+
+    
     # TensorFlow
     try:
         if not is_tf_available():
