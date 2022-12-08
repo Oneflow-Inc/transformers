@@ -70,6 +70,17 @@ else:
         "XLMRobertaModel",
     ]
 
+_import_structure["modeling_oneflow_xlm_roberta"] = [
+    "ONEFLOW_XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST",
+    "OneFlowXLMRobertaForCausalLM",
+    "OneFlowXLMRobertaForMaskedLM",
+    "OneFlowXLMRobertaForMultipleChoice",
+    "OneFlowXLMRobertaForQuestionAnswering",
+    "OneFlowXLMRobertaForSequenceClassification",
+    "OneFlowXLMRobertaForTokenClassification",
+    "OneFlowXLMRobertaModel",
+]
+
 try:
     if not is_tf_available():
         raise OptionalDependencyNotAvailable()
@@ -140,6 +151,17 @@ if TYPE_CHECKING:
             XLMRobertaForTokenClassification,
             XLMRobertaModel,
         )
+    
+    from .modeling_oneflow_xlm_roberta import (
+        ONEFLOW_XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST,
+        OneFlowXLMRobertaForCausalLM,
+        OneFlowXLMRobertaForMaskedLM,
+        OneFlowXLMRobertaForMultipleChoice,
+        OneFlowXLMRobertaForQuestionAnswering,
+        OneFlowXLMRobertaForSequenceClassification,
+        OneFlowXLMRobertaForTokenClassification,
+        OneFlowXLMRobertaModel,
+    )
 
     try:
         if not is_tf_available():

@@ -64,6 +64,21 @@ else:
         "load_tf_weights_in_bert",
     ]
 
+_import_structure["modeling_oneflow_bert"] = [
+    "ONEFLOW_BERT_PRETRAINED_MODEL_ARCHIVE_LIST",
+    "OneFlowBertForMaskedLM",
+    "OneFlowBertForMultipleChoice",
+    "OneFlowBertForNextSentencePrediction",
+    "OneFlowBertForPreTraining",
+    "OneFlowBertForQuestionAnswering",
+    "OneFlowBertForSequenceClassification",
+    "OneFlowBertForTokenClassification",
+    "OneFlowBertLayer",
+    "OneFlowBertLMHeadModel",
+    "OneFlowBertModel",
+    "OneFlowBertPreTrainedModel",
+]
+
 try:
     if not is_tf_available():
         raise OptionalDependencyNotAvailable()
@@ -145,6 +160,21 @@ if TYPE_CHECKING:
             BertPreTrainedModel,
             load_tf_weights_in_bert,
         )
+
+    from .modeling_oneflow_bert import (
+        ONEFLOW_BERT_PRETRAINED_MODEL_ARCHIVE_LIST,
+        OneFlowBertForMaskedLM,
+        OneFlowBertForMultipleChoice,
+        OneFlowBertForNextSentencePrediction,
+        OneFlowBertForPreTraining,
+        OneFlowBertForQuestionAnswering,
+        OneFlowBertForSequenceClassification,
+        OneFlowBertForTokenClassification,
+        OneFlowBertLayer,
+        OneFlowBertLMHeadModel,
+        OneFlowBertModel,
+        OneFlowBertPreTrainedModel,
+    )
 
     try:
         if not is_tf_available():
