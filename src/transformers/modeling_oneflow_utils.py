@@ -409,7 +409,7 @@ def load_state_dict(checkpoint_file: Union[str, os.PathLike]):
                 if value.is_cuda:
                     raise ValueError(f"torch model is not on cpu, it is on {value.device}")
                 val = value.detach().cpu().numpy()
-                oneflow_parameters[key] = val
+                oneflow_parameters[key] = torch.from_numpy(val)
             return oneflow_parameters
     except Exception as e:
         try:
@@ -2530,13 +2530,6 @@ class OneFlowPreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushT
                 remove_prefix_from_model,
                 ignore_mismatched_sizes,
             )
-
-            if dtype == torch.float16:
-                import numpy as np
-                for key,value in state_dict.items():
-                    if value.dtype == np.float32:
-                        state_dict[key] = value.astype(np.float16)
-
             error_msgs = _load_state_dict_into_model(model_to_load, state_dict, start_prefix)
         else:
             # Sharded checkpoint or whole but low_cpu_mem_usage==True
