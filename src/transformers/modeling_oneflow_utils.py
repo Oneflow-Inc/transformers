@@ -409,7 +409,7 @@ def load_state_dict(checkpoint_file: Union[str, os.PathLike]):
                 if value.is_cuda:
                     raise ValueError(f"torch model is not on cpu, it is on {value.device}")
                 val = value.detach().cpu().numpy()
-                oneflow_parameters[key] = val
+                oneflow_parameters[key] = torch.from_numpy(val)
             return oneflow_parameters
     except Exception as e:
         try:
