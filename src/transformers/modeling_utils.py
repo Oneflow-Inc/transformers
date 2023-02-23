@@ -472,6 +472,18 @@ def _load_state_dict_into_model(model_to_load, state_dict, start_prefix):
 
     error_msgs = []
 
+    # TODO: add start_prefix judgement
+    for k, v in model_to_load.state_dict().items():
+        if k in state_dict and v.is_global:
+            state_dict[k] = state_dict[k].to_global(
+                sbp=torch.sbp.broadcast, 
+                placement=torch.env.all_device_placement("cpu")
+            )
+            state_dict[k] = state_dict[k].to_global(
+                sbp=v.sbp,
+                placement=torch.placement("cpu", ranks=list(v.placement.ranks)),
+            )
+
     # PyTorch's `_load_from_state_dict` does not copy parameters in a module's descendants
     # so we need to apply the function recursively.
     def load(module: nn.Module, state_dict, prefix=""):
