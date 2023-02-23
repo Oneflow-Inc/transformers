@@ -37,6 +37,13 @@ from ...utils import (
     replace_return_docstrings,
 )
 from .configuration_opt import OPTConfig
+try:
+    from libai.layers import Linear
+    use_libai=True
+    nn.Linear=Linear
+except:
+    ues_libai=False
+    print("warning: libai.layer.Linear not found, use nn.Linear instead")
 
 
 logger = logging.get_logger(__name__)
@@ -69,8 +76,8 @@ def _make_causal_mask(input_ids_shape: torch.Size, dtype: torch.dtype, past_key_
     Make causal mask used for bi-directional self-attention.
     """
     bsz, tgt_len = input_ids_shape
-    mask = torch.full((tgt_len, tgt_len), torch.tensor(torch.finfo(dtype).min))
-    mask_cond = torch.arange(mask.size(-1))
+    mask = torch.zeros((tgt_len, tgt_len)) + torch.finfo(dtype).min
+    mask_cond = torch.arange(mask.size(-1), device=mask.device)
     mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
     mask = mask.to(dtype)
 
@@ -142,10 +149,16 @@ class OPTAttention(nn.Module):
         self.scaling = self.head_dim**-0.5
         self.is_decoder = is_decoder
 
-        self.k_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
-        self.v_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
-        self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
-        self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+        if use_libai:
+            self.k_proj = Linear(embed_dim, embed_dim, bias=bias, parallel="col")
+            self.v_proj = Linear(embed_dim, embed_dim, bias=bias, parallel="col")
+            self.q_proj = Linear(embed_dim, embed_dim, bias=bias, parallel="col")
+            self.out_proj = Linear(embed_dim, embed_dim, bias=bias, parallel="row")
+        else:
+            self.k_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+            self.v_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+            self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+            self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
 
     def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
         return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
@@ -224,7 +237,10 @@ class OPTAttention(nn.Module):
 
         # upcast to fp32 if the weights are in fp16. Please see https://github.com/huggingface/transformers/pull/17437
         if attn_weights.dtype == torch.float16:
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(torch.float16)
+            # NOTE: oneflow lack of F.softmax(..., dtype=) 
+            attn_weights = attn_weights.to(dtype=torch.float32)
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1).to(torch.float16)
+            # attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(torch.float16)
         else:
             attn_weights = nn.functional.softmax(attn_weights, dim=-1)
 
@@ -287,8 +303,12 @@ class OPTDecoderLayer(nn.Module):
         self.self_attn_layer_norm = nn.LayerNorm(
             self.embed_dim, elementwise_affine=config.layer_norm_elementwise_affine
         )
-        self.fc1 = nn.Linear(self.embed_dim, config.ffn_dim, bias=config.enable_bias)
-        self.fc2 = nn.Linear(config.ffn_dim, self.embed_dim, bias=config.enable_bias)
+        if use_libai:
+            self.fc1 = Linear(self.embed_dim, config.ffn_dim, bias=config.enable_bias, parallel="col")
+            self.fc2 = Linear(config.ffn_dim, self.embed_dim, bias=config.enable_bias, parallel="row")
+        else:
+            self.fc1 = nn.Linear(self.embed_dim, config.ffn_dim, bias=config.enable_bias)
+            self.fc2 = nn.Linear(config.ffn_dim, self.embed_dim, bias=config.enable_bias)
         self.final_layer_norm = nn.LayerNorm(self.embed_dim, elementwise_affine=config.layer_norm_elementwise_affine)
 
     def forward(
