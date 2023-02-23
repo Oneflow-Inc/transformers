@@ -20,6 +20,9 @@
 
 __version__ = "4.27.0.dev0"
 
+import oneflow as flow
+flow.mock_torch.enable()
+
 from typing import TYPE_CHECKING
 
 # Check the dependencies satisfy the minimal versions required.
